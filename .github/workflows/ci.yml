@@ -1,0 +1,58 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test-cv-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cv-service
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+      - run: sudo apt-get install -y libgl1-mesa-glx libglib2.0-0
+      - run: pip install fastapi uvicorn pydantic-settings ultralytics opencv-python-headless Pillow numpy python-multipart pytest httpx
+      - name: Lint
+        run: pip install ruff && ruff check .
+      - run: pytest ../tests/cv-service/ -v
+
+  test-backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+      - run: pip install -r requirements.txt pytest pytest-asyncio
+      - run: pytest ../tests/backend/ -v
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm install
+      - run: npm test -- --watchAll=false --passWithNoTests

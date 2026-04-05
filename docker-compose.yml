@@ -1,6 +1,11 @@
 version: "3.9"
 services:
   cv-service:
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+          cpus: '2.0'
     build:
       context: ./cv-service
       dockerfile: ../docker/Dockerfile.cv-service
@@ -14,6 +19,11 @@ services:
       start_period: 60s
 
   backend:
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+          cpus: '0.5'
     build:
       context: ./backend
       dockerfile: ../docker/Dockerfile.backend
@@ -24,6 +34,11 @@ services:
       - ALLOWED_ORIGINS=["http://localhost:3000"]
     depends_on:
       cv-service:
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+          cpus: '2.0'
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -32,6 +47,11 @@ services:
       retries: 3
 
   frontend:
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: '0.25'
     build:
       context: ./frontend
       dockerfile: ../docker/Dockerfile.frontend

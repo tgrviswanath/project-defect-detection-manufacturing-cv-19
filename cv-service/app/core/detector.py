@@ -35,7 +35,10 @@ PALETTE = [
 def _get_model():
     global _model
     if _model is None:
-        _model = YOLO("yolov8n.pt")
+        try:
+            _model = YOLO("yolov8n.pt")
+        except Exception as e:
+            raise FileNotFoundError(f"Defect detection model unavailable: {e}")
     return _model
 
 def _load_image(image_bytes: bytes) -> np.ndarray:
